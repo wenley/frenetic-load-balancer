@@ -1,0 +1,94 @@
+The Load Balancer Test Harness
+
+This directory contains a primitive test harness for a
+load balancer.
+
+0. DEPENDENCIES
+
+Requires:
+    - Coordinated usage with the controller code in basic_lb.py
+      (currently found in ~/frenetic/examples/).
+    - Updates to cli.py, found in ~/frenetic/mininet-patch/
+
+To install the updates, cd into mininet-patch and run
+$ make
+
+To uninstall the updates, cd into mininet-patch and run
+$ make clean
+
+1. DESCRIPTION
+
+The contents of this directory set up a simple test harness intended for the load balancer
+controller code found in ~/frenetic/examples/basic_lb.py. LB_sandbox.py will set
+up a simple topology comprised of three switches:
+    1. A switch connected to an array of replicated servers
+    2. A switch connected to an array of client hosts
+    3. A load balancing switch connecting the previous two switches
+
+The number of servers and the number of clients can be specified so long as the
+specified options are consistent between LB_sandbox.py and basic_lb.py. 
+
+Server IP and MAC addresses will be assigned for readability.
+Client IP addresses will be assigned for readability.
+
+Clients and servers will have static ARP table entries installed, default gateways
+set, and a CLI script will be written into a file LB.cli (which will be necessary
+to initialize some entries in the server-side swtich).
+
+
+2. USAGE
+
+$ sudo ./LB_sandbox.py
+
+Options:
+
+   -S   (--num-servers) The number of replicated servers desired. Defaults to 2.
+   -C   (--num-clients) The number of client hosts desired. Defaults to 4.
+   -I   (--dummy-ip) The IP of the server array revealed to clients. Defaults to 10.1.0.100
+   -n   (--num-tests) The number of wget requests that will be run by each client.
+        Defaults to 10.
+   -d   (--delay) Time before clients begin their series of requests.
+
+NOTE: The values of the -S and -C options MUST be identical to those passed to
+basic_lb.py. For example:
+$ sudo ./LB_sandbox.py -S 3 -C 10
+$ sudo ../frenetic_run.py basic_lb 3 10
+
+NOTE: Usage of basic_lb is specified in section 3 below.
+
+After start up, the program will pause and notify you that it is waiting for the controller.
+At this point, in a separate terminal, start up the controller code as follows:
+$ sudo ../frenetic_run.py basic_lb 
+
+Once the controller is initialized, press enter to continue set up.
+
+You will be asked if:
+    1. You want the servers to start running mongoose automatically. Any input other than 'n'
+       will be taken as a yes.
+    2. You want the clients to perform a series of wget requests for a file called dummyfile
+       found in ServerData. If you answered 'n' to the previous, your answer should be 'n' here
+       as well. Bad things will happen otherwise.
+
+At this point, you will see a series of ping messages. This is the servers pinging each other to
+initialize the forwarding rules on the server-side switch. After that, mininet will start up and 
+the typical prompt will be shown:
+mininet>
+
+Shortly after (or after the delay specified in the options), you will see clients begin making
+their requests to the server array. Copies of dummyfile will be placed in separate directories
+for each client (format: HTML-c**). 
+
+
+3. Usage of basic_lb
+
+$ sudo ../frenetic_run.py basic_lb [num_servers] [num_clients] [dummy_ip]
+
+num_servers - The Number of servers being run. Should be equal to -S if -S is specified in LB_sandbox.py
+num_clients - The number of clients being run. Should be equal to -C if -C is specified in LB_sandbox.py
+dummy_ip    - The fake IP of the server array that is revealed to clients. Should be equal to -I if -I is
+              specified in LB_sandbox.py
+
+
+- - - - -
+Written: Wenley Tong (June 2012)
+
